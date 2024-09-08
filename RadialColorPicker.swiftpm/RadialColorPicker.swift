@@ -7,18 +7,12 @@
 
 import SwiftUI
 
-fileprivate struct DiameterPreferenceKey: PreferenceKey
-{
-    static let defaultValue = 0.0
-    static func reduce(value: inout Double, nextValue: () -> Double) {}
-}
-
 struct RadialColorPicker: View
 {
     @Binding var color: Color
     
     private let colors: [Color] = [.red, .orange, .yellow, .mint, .green, .cyan, .blue, .indigo, .pink]
-    @State private var isActive = true
+    @State private var isActive = false
     @State private var diameter = 0.0
     
     private var capsuleWidth: Double
@@ -36,19 +30,17 @@ struct RadialColorPicker: View
                     let angle = Angle.radians(Double(ndx) * 2 * Double.pi / 9.0)
                     
                     Button {
-                        
+                        color = self.colors[ndx]
                     } label: {
                         Capsule()
                             .fill(colors[ndx])
                             .stroke(.black)
                             .frame(width: capsuleWidth, height: 0.5 * size)
                     }
-                    .rotationEffect(angle, anchor: .bottom)
-                    .alignmentGuide(VerticalAlignment.center) { d in
-                        d[VerticalAlignment.bottom]
-                    }
-                    .offset(x: isActive ? 0 : -0.25 * size * sin(angle.radians), y: isActive ? 0 : 0.25 * size * cos(angle.radians))
-                    .animation(.spring(duration: 0.75, bounce: 0.9), value: isActive)
+                    .buttonStyle(.customShrink)
+                    .rotationEffect(angle, anchor: .center)
+                    .offset(x: isActive ? 0.25 * size * sin(angle.radians) : 0, y: isActive ? -0.25 * size * cos(angle.radians) : 0)
+                    .animation(.default, value: isActive)
                 }
                 
                 Button {
@@ -72,18 +64,13 @@ struct RadialColorPicker: View
                             }
                         }
                 }
-                .buttonStyle(.customRadial)
-                .background {
-                    GeometryReader { circleProxy in
-                        Color.clear
-                            .preference(key: DiameterPreferenceKey.self, value: circleProxy.size.width)
-                            .onPreferenceChange(DiameterPreferenceKey.self) { value in
-                                self.diameter = value
-                            }
-                    }
+                .buttonStyle(.customShrink)
+                .onSizeChange { size in
+                    self.diameter = size.width
                 }
                 .padding(0.25 * size)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         }
     }
 }

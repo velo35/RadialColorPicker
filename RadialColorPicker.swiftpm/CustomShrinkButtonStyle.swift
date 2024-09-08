@@ -7,20 +7,20 @@
 
 import SwiftUI
 
-struct CustomRadialButtonStyle: ButtonStyle
+struct CustomShrinkButtonStyle: ButtonStyle
 {
     @State var cool = false
-    private let scale = 0.9
+    private let scale = 0.95
     
     func makeBody(configuration: Configuration) -> some View
     {
         configuration.label
             .scaleEffect(x: configuration.isPressed ? scale : 1.0, y: configuration.isPressed ? scale : 1.0)
-            .animation(.linear(duration: 0.15), value: configuration.isPressed)
+            .animation(.linear(duration: 0.10), value: configuration.isPressed)
     }
 }
 
-extension ButtonStyle where Self == CustomRadialButtonStyle
+extension ButtonStyle where Self == CustomShrinkButtonStyle
 {
-    static var customRadial: CustomRadialButtonStyle { .init() }
+    static var customShrink: CustomShrinkButtonStyle { .init() }
 }
