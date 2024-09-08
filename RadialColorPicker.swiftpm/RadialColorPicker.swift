@@ -25,7 +25,39 @@ struct RadialColorPicker: View
         GeometryReader { proxy in
             let size = min(proxy.size.width, proxy.size.height)
             
-            ZStack {
+            Button {
+                var transaction = Transaction(animation: .easeInOut(duration: 0.25))
+                if isActive {
+                    transaction.disablesAnimations = true
+                }
+                withTransaction(transaction) {
+                    isActive.toggle()
+                }
+            } label: {
+                Circle()
+                    .fill(color)
+                    .overlay {
+                        ZStack {
+                            Circle()
+                                .stroke(lineWidth: 8)
+                                .blur(radius: 8)
+                                .padding(4)
+                                .clipShape(Circle())
+                            
+                            Circle()
+                                .stroke(.black, lineWidth: min(14, 0.125 * size))
+                            
+                            Circle()
+                                .stroke(.white, lineWidth: min(8, 0.05 * size))
+                        }
+                    }
+            }
+            .buttonStyle(.customShrink)
+            .onSizeChange { size in
+                self.diameter = size.width
+            }
+            .padding(0.25 * size)
+            .background {
                 ForEach(0 ..< 9) { ndx in
                     let angle = Angle.radians(Double(ndx) * 2 * Double.pi / 9.0)
                     
@@ -34,43 +66,21 @@ struct RadialColorPicker: View
                     } label: {
                         Capsule()
                             .fill(colors[ndx])
-                            .stroke(.black)
+                            .strokeBorder(.black, lineWidth: 4)
                             .frame(width: capsuleWidth, height: 0.5 * size)
                     }
                     .buttonStyle(.customShrink)
-                    .rotationEffect(angle, anchor: .center)
-                    .offset(x: isActive ? 0.25 * size * sin(angle.radians) : 0, y: isActive ? -0.25 * size * cos(angle.radians) : 0)
-                    .animation(.default, value: isActive)
+                    .offset(y: isActive ? 0 : 0.25 * size)
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+                    .clipped()
+                    .rotationEffect(angle, anchor: .bottom)
+                    .animation(.spring(duration: 0.5, bounce: 0.7).delay(0.1 * Double(ndx)), value: isActive)
                 }
-                
-                Button {
-                    isActive.toggle()
-                } label: {
-                    Circle()
-                        .fill(color)
-                        .overlay {
-                            ZStack {
-                                Circle()
-                                    .stroke(lineWidth: 8)
-                                    .blur(radius: 8)
-                                    .padding(4)
-                                    .clipShape(Circle())
-                                
-                                Circle()
-                                    .stroke(.black, lineWidth: min(14, 0.125 * size))
-                                
-                                Circle()
-                                    .stroke(.white, lineWidth: min(8, 0.05 * size))
-                            }
-                        }
+                .alignmentGuide(VerticalAlignment.center) { d in
+                    d[.bottom]
                 }
-                .buttonStyle(.customShrink)
-                .onSizeChange { size in
-                    self.diameter = size.width
-                }
-                .padding(0.25 * size)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }
